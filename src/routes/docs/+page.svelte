@@ -132,20 +132,23 @@
 					<CodeBlock language="JSON" label="ankimcp.json">
 						{`{
   "host": "localhost",
-  "port": 8765,
+  "port": 4473,
+  "mode": "denylist",
   "global_permissions": {
     "read": true,
     "write": true,
     "delete": false
   },
-  "deck_permissions": {
-    "MyPrivateDeck": {
-      "read": false,
-      "write": false,
-      "delete": false
-    }
-  },
-  "protected_decks": ["ImportantDeck", "ExamPrep"]
+  "deck_allowlist": [],
+  "deck_denylist": ["PrivateDeck"],
+  "protected_decks": ["Default", "ImportantDeck"],
+  "protected_tags": [],
+  "readonly_tags": ["readonly"],
+  "note_type_permissions": {
+    "allow_create": true,
+    "allow_modify": false,
+    "allowed_types": []
+  }
 }`}
 					</CodeBlock>
 				</div>
@@ -157,20 +160,17 @@
 
 				<div class="host-configs">
 					<div class="host-config">
-						<h4 class="mb-2 font-semibold">Claude Desktop</h4>
+						<h4 class="mb-2 font-semibold">Claude Desktop / Claude Code</h4>
 						<p class="mb-2 text-sm">
-							Edit <code>~/.config/claude-desktop/claude_desktop_config.json</code>:
+							Add to your MCP configuration (e.g., <code>.mcp.json</code> or
+							<code>claude_desktop_config.json</code>):
 						</p>
-						<CodeBlock language="JSON" label="claude_desktop_config.json">
+						<CodeBlock language="JSON" label="mcp.json">
 							{`{
   "mcpServers": {
     "ankimcp": {
-      "command": "python",
-      "args": ["-m", "ankimcp"],
-      "env": {
-        "ANKIMCP_HOST": "localhost",
-        "ANKIMCP_PORT": "8765"
-      }
+      "type": "sse",
+      "url": "http://localhost:4473/sse"
     }
   }
 }`}
@@ -181,9 +181,8 @@
 						<h4 class="mb-2 font-semibold">Other MCP Hosts</h4>
 						<p class="mb-2 text-sm">For custom MCP implementations, connect to:</p>
 						<ul class="list-inside list-disc text-sm">
-							<li><strong>Host:</strong> <code>localhost</code> (or configured host)</li>
-							<li><strong>Port:</strong> <code>8765</code> (or configured port)</li>
-							<li><strong>Protocol:</strong> MCP over stdio/HTTP</li>
+							<li><strong>URL:</strong> <code>http://localhost:4473/sse</code></li>
+							<li><strong>Protocol:</strong> MCP over SSE (Server-Sent Events)</li>
 						</ul>
 					</div>
 				</div>
@@ -205,9 +204,10 @@
 					<h3 class="mb-2 text-lg font-semibold">Deck Management</h3>
 					<ul class="capability-list">
 						<li><code>list_decks</code> - Get all available decks</li>
+						<li><code>get_deck_info</code> - Get detailed deck information</li>
 						<li><code>create_deck</code> - Create new decks</li>
+						<li><code>update_deck</code> - Rename or update deck properties</li>
 						<li><code>delete_deck</code> - Remove decks (with protection)</li>
-						<li><code>get_deck_stats</code> - Retrieve deck statistics</li>
 					</ul>
 				</div>
 
@@ -216,32 +216,29 @@
 					<h3 class="mb-2 text-lg font-semibold">Note Operations</h3>
 					<ul class="capability-list">
 						<li><code>search_notes</code> - Search using Anki syntax</li>
-						<li><code>get_note_info</code> - Detailed note information</li>
+						<li><code>get_note</code> - Get detailed note information</li>
+						<li><code>get_cards_for_note</code> - Get cards for a note</li>
 						<li><code>create_note</code> - Add new notes/cards</li>
 						<li><code>update_note</code> - Modify existing notes</li>
-						<li><code>delete_notes</code> - Remove notes (with protection)</li>
+						<li><code>delete_note</code> - Remove a note</li>
 					</ul>
 				</div>
 
 				<div class="capability-card">
 					<Database class="mb-3 h-8 w-8 text-purple-600" />
-					<h3 class="mb-2 text-lg font-semibold">Card Information</h3>
+					<h3 class="mb-2 text-lg font-semibold">Note Types</h3>
 					<ul class="capability-list">
-						<li><code>get_card_info</code> - Individual card details</li>
-						<li><code>find_cards</code> - Search for specific cards</li>
-						<li><code>get_card_reviews</code> - Review history</li>
-						<li><code>suspend_cards</code> - Suspend/unsuspend cards</li>
+						<li><code>list_note_types</code> - List available note types</li>
+						<li><code>create_note_type</code> - Create custom note types</li>
 					</ul>
 				</div>
 
 				<div class="capability-card">
 					<Database class="mb-3 h-8 w-8 text-orange-600" />
-					<h3 class="mb-2 text-lg font-semibold">Statistics & Analysis</h3>
+					<h3 class="mb-2 text-lg font-semibold">Statistics & Settings</h3>
 					<ul class="capability-list">
-						<li><code>get_collection_stats</code> - Overall collection metrics</li>
 						<li><code>get_review_stats</code> - Learning progress data</li>
-						<li><code>get_due_cards</code> - Cards scheduled for review</li>
-						<li><code>get_learning_stats</code> - Performance analytics</li>
+						<li><code>get_permissions</code> - View permission settings</li>
 					</ul>
 				</div>
 			</div>
@@ -254,9 +251,7 @@
 			<div class="api-reference">
 				<div class="api-method">
 					<h3 class="api-method-name">list_decks</h3>
-					<p class="api-description">
-						Returns all available decks with their IDs and configuration status.
-					</p>
+					<p class="api-description">Returns all available decks with their IDs and card counts.</p>
 					<div class="api-example">
 						<h4>Response Example:</h4>
 						<CodeBlock language="JSON" label="list_decks">
@@ -264,9 +259,8 @@
   {
     "id": 1234567890,
     "name": "Japanese::Vocabulary",
-    "newCount": 45,
-    "reviewCount": 12,
-    "totalCount": 892
+    "card_count": 892,
+    "is_filtered": false
   }
 ]`}
 						</CodeBlock>
@@ -282,7 +276,9 @@
 							<li>
 								<code>query</code> (string) - Anki search query (e.g., "deck:Japanese tag:vocabulary")
 							</li>
-							<li><code>limit</code> (number, optional) - Maximum results to return</li>
+							<li>
+								<code>limit</code> (number, optional) - Maximum results to return (default: 50)
+							</li>
 						</ul>
 					</div>
 					<div class="api-example">
@@ -290,13 +286,14 @@
 						<CodeBlock language="JSON" label="search_notes">
 							{`[
   {
-    "noteId": 1234567890,
+    "id": 1234567890,
+    "model_name": "Basic",
     "fields": {
       "Front": "こんにちは",
       "Back": "Hello"
     },
     "tags": ["vocabulary", "greetings"],
-    "modelName": "Basic"
+    "card_count": 1
   }
 ]`}
 						</CodeBlock>
@@ -309,11 +306,142 @@
 					<div class="api-parameters">
 						<h4>Parameters:</h4>
 						<ul>
-							<li><code>deckName</code> (string) - Target deck name</li>
-							<li><code>modelName</code> (string) - Note type/model name</li>
+							<li><code>deck_name</code> (string) - Target deck name</li>
+							<li><code>model_name</code> (string) - Note type/model name</li>
 							<li><code>fields</code> (object) - Field values as key-value pairs</li>
 							<li><code>tags</code> (array, optional) - Tags to add to the note</li>
 						</ul>
+					</div>
+					<div class="api-example">
+						<h4>Response Example:</h4>
+						<CodeBlock language="JSON" label="create_note">
+							{`{
+  "id": 1234567890,
+  "model_name": "Basic",
+  "fields": {
+    "Front": "Hello",
+    "Back": "World"
+  },
+  "tags": ["test"],
+  "card_count": 1
+}`}
+						</CodeBlock>
+					</div>
+				</div>
+
+				<div class="api-method">
+					<h3 class="api-method-name">get_deck_info</h3>
+					<p class="api-description">Get detailed information about a specific deck.</p>
+					<div class="api-parameters">
+						<h4>Parameters:</h4>
+						<ul>
+							<li><code>deck_name</code> (string) - Name of the deck</li>
+						</ul>
+					</div>
+					<div class="api-example">
+						<h4>Response Example:</h4>
+						<CodeBlock language="JSON" label="get_deck_info">
+							{`{
+  "id": 1234567890,
+  "name": "Japanese::Vocabulary",
+  "card_count": 892,
+  "new_count": 45,
+  "learning_count": 12,
+  "review_count": 100,
+  "is_filtered": false
+}`}
+						</CodeBlock>
+					</div>
+				</div>
+
+				<div class="api-method">
+					<h3 class="api-method-name">update_deck</h3>
+					<p class="api-description">Update a deck's properties (rename or set description).</p>
+					<div class="api-parameters">
+						<h4>Parameters:</h4>
+						<ul>
+							<li><code>deck_name</code> (string) - Current name of the deck</li>
+							<li><code>new_name</code> (string, optional) - New name for the deck</li>
+							<li><code>description</code> (string, optional) - New description</li>
+						</ul>
+					</div>
+				</div>
+
+				<div class="api-method">
+					<h3 class="api-method-name">delete_deck</h3>
+					<p class="api-description">
+						Delete a deck and all its cards. Cannot delete protected decks.
+					</p>
+					<div class="api-parameters">
+						<h4>Parameters:</h4>
+						<ul>
+							<li><code>deck_name</code> (string) - Name of the deck to delete</li>
+						</ul>
+					</div>
+				</div>
+
+				<div class="api-method">
+					<h3 class="api-method-name">get_review_stats</h3>
+					<p class="api-description">Get review statistics for a deck or the entire collection.</p>
+					<div class="api-parameters">
+						<h4>Parameters:</h4>
+						<ul>
+							<li><code>deck_name</code> (string, optional) - Deck name, or omit for all decks</li>
+						</ul>
+					</div>
+					<div class="api-example">
+						<h4>Response Example:</h4>
+						<CodeBlock language="JSON" label="get_review_stats">
+							{`{
+  "deck_name": "All Decks",
+  "total_cards": 5000,
+  "new_cards": 1000,
+  "learning_cards": 50,
+  "review_cards": 500,
+  "mature_cards": 3450
+}`}
+						</CodeBlock>
+					</div>
+				</div>
+
+				<div class="api-method">
+					<h3 class="api-method-name">list_note_types</h3>
+					<p class="api-description">List all available note types (models) with their fields.</p>
+					<div class="api-example">
+						<h4>Response Example:</h4>
+						<CodeBlock language="JSON" label="list_note_types">
+							{`[
+  {
+    "id": 1234567890,
+    "name": "Basic",
+    "fields": ["Front", "Back"],
+    "templates": ["Card 1"],
+    "field_count": 2,
+    "template_count": 1
+  }
+]`}
+						</CodeBlock>
+					</div>
+				</div>
+
+				<div class="api-method">
+					<h3 class="api-method-name">get_permissions</h3>
+					<p class="api-description">Get current permission settings.</p>
+					<div class="api-example">
+						<h4>Response Example:</h4>
+						<CodeBlock language="JSON" label="get_permissions">
+							{`{
+  "mode": "denylist",
+  "global_permissions": {
+    "read": true,
+    "write": true,
+    "delete": true
+  },
+  "protected_decks": ["Default"],
+  "deck_allowlist": [],
+  "deck_denylist": []
+}`}
+						</CodeBlock>
 					</div>
 				</div>
 			</div>
@@ -340,22 +468,17 @@
 				</div>
 
 				<div class="security-feature">
-					<h3 class="mb-2 text-lg font-semibold">Deck-Specific Controls</h3>
-					<p class="mb-3">Override permissions for individual decks:</p>
-					<CodeBlock language="JSON" label="deck_permissions" allowCopy={false}>
-						{`"deck_permissions": {
-  "PersonalDiary": {
-    "read": false,    // Completely hidden
-    "write": false,
-    "delete": false
-  },
-  "WorkNotes": {
-    "read": true,     // Read-only access
-    "write": false,
-    "delete": false
-  }
-}`}
+					<h3 class="mb-2 text-lg font-semibold">Deck Access Control</h3>
+					<p class="mb-3">Control which decks are accessible using allowlist or denylist mode:</p>
+					<CodeBlock language="JSON" label="deck_access" allowCopy={false}>
+						{`"mode": "denylist",
+"deck_allowlist": [],
+"deck_denylist": ["PersonalDiary", "Private"]`}
 					</CodeBlock>
+					<p class="mt-2 text-sm text-gray-600">
+						In <strong>denylist</strong> mode, all decks are accessible except those listed. In
+						<strong>allowlist</strong> mode, only listed decks are accessible.
+					</p>
 				</div>
 
 				<div class="security-feature">
@@ -363,13 +486,27 @@
 					<p class="mb-3">Add an extra layer of protection against accidental deletion:</p>
 					<CodeBlock language="JSON" label="protected_decks" allowCopy={false}>
 						{`"protected_decks": [
-  "MedicalSchool",
-  "PhD Research",
-  "CertificationExam"
+  "Default",
+  "MedicalSchool"
 ]`}
 					</CodeBlock>
 					<p class="text-sm text-gray-600">
 						Protected decks cannot be deleted even if delete permissions are enabled.
+					</p>
+				</div>
+
+				<div class="security-feature">
+					<h3 class="mb-2 text-lg font-semibold">Note Type Permissions</h3>
+					<p class="mb-3">Control which note types can be used for creating notes:</p>
+					<CodeBlock language="JSON" label="note_type_permissions" allowCopy={false}>
+						{`"note_type_permissions": {
+  "allow_create": true,
+  "allow_modify": false,
+  "allowed_types": []
+}`}
+					</CodeBlock>
+					<p class="text-sm text-gray-600">
+						When <code>allowed_types</code> is empty with denylist mode, all types are allowed.
 					</p>
 				</div>
 			</div>
@@ -387,7 +524,7 @@
 						<ul class="ml-4 list-inside list-disc space-y-1">
 							<li>Ensure Anki is running with a profile loaded</li>
 							<li>Check that the addon is enabled in Tools → Add-ons</li>
-							<li>Verify port 8765 is not blocked by firewall</li>
+							<li>Verify port 4473 is not blocked by firewall</li>
 							<li>Restart Anki and try again</li>
 						</ul>
 					</div>
@@ -411,12 +548,18 @@
 				<div class="issue">
 					<h3 class="issue-title">Connection Refused</h3>
 					<div class="issue-content">
-						<p><strong>Symptoms:</strong> MCP host can't connect to localhost:8765</p>
+						<p>
+							<strong>Symptoms:</strong> MCP host can't connect to
+							<code>http://localhost:4473/sse</code>
+						</p>
 						<p><strong>Solutions:</strong></p>
 						<ul class="ml-4 list-inside list-disc space-y-1">
-							<li>Check if another application is using port 8765</li>
+							<li>Check if another application is using port 4473</li>
+							<li>
+								Verify the SSE endpoint is accessible: <code>curl http://localhost:4473/health</code
+								>
+							</li>
 							<li>Try changing the port in addon configuration</li>
-							<li>Verify localhost DNS resolution works</li>
 							<li>Check system firewall settings</li>
 						</ul>
 					</div>

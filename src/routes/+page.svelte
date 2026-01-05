@@ -102,18 +102,14 @@
 					<p class="mb-4">Add AnkiMCP to your MCP host configuration:</p>
 
 					<div class="mb-4 rounded-lg bg-gray-50 p-4">
-						<h4 class="mb-2 font-semibold">For Claude Desktop</h4>
-						<p class="mb-2">Edit your Claude Desktop config:</p>
-						<CodeBlock language="JSON" label="claude_desktop_config.json">
+						<h4 class="mb-2 font-semibold">For Claude Desktop / Claude Code</h4>
+						<p class="mb-2">Add to your MCP configuration:</p>
+						<CodeBlock language="JSON" label="mcp.json">
 							{`{
   "mcpServers": {
     "ankimcp": {
-      "command": "python",
-      "args": ["-m", "ankimcp"],
-      "env": {
-        "ANKIMCP_HOST": "localhost",
-        "ANKIMCP_PORT": "8765"
-      }
+      "type": "sse",
+      "url": "http://localhost:4473/sse"
     }
   }
 }`}
