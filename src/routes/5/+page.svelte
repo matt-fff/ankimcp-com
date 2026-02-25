@@ -1,5 +1,4 @@
 <script lang="ts">
-	import CodeBlock from '$lib/components/CodeBlock.svelte';
 	import {
 		Code,
 		Shield,
@@ -7,21 +6,35 @@
 		Layers,
 		Cpu,
 		Bot,
+		Copy,
+		Check,
 		ArrowRight,
 		Zap,
 		Settings,
-		Radio,
-		Download,
-		BookOpen,
-		Play
+		Radio
 	} from 'lucide-svelte';
 
+	let copied = $state(false);
 	let featureCardsVisible = $state(false);
 	let connectionVisible = $state(false);
-	let quickstartVisible = $state(false);
 	let configVisible = $state(false);
 	let statsVisible = $state(false);
 	let ctaVisible = $state(false);
+
+	const configJson = `{
+  "mcpServers": {
+    "ankimcp": {
+      "type": "sse",
+      "url": "http://localhost:4473/sse"
+    }
+  }
+}`;
+
+	function copyConfig() {
+		navigator.clipboard.writeText(configJson);
+		copied = true;
+		setTimeout(() => (copied = false), 2000);
+	}
 
 	$effect(() => {
 		const observers: IntersectionObserver[] = [];
@@ -50,7 +63,6 @@
 
 		createObserver('.feature-cards-section', () => (featureCardsVisible = true));
 		createObserver('.connection-section', () => (connectionVisible = true));
-		createObserver('.quickstart-section', () => (quickstartVisible = true));
 		createObserver('.config-section', () => (configVisible = true));
 		createObserver('.stats-section', () => (statsVisible = true));
 		createObserver('.cta-section', () => (ctaVisible = true));
@@ -63,7 +75,7 @@
 	<title>AnkiMCP - AI-Powered Anki Integration</title>
 	<meta
 		name="description"
-		content="Connect your Anki collection to AI assistants through the Model Context Protocol (MCP)"
+		content="Connect your Anki collection to AI assistants through the Model Context Protocol (MCP). Glassmorphism Aurora design."
 	/>
 </svelte:head>
 
@@ -170,97 +182,29 @@
 		</div>
 	</section>
 
-	<!-- Quick Start Section -->
-	<section class="quickstart-section" id="quickstart">
+	<!-- Config Panel -->
+	<section class="config-section" id="quickstart">
 		<div class="section-container">
-			<h2 class="section-title" class:visible={quickstartVisible}>Quick Start</h2>
-			<div class="quickstart-steps" class:visible={quickstartVisible}>
-				<!-- Step 1: Install -->
-				<div class="glass-step-card">
-					<div class="step-header">
-						<span class="step-badge">1</span>
-						<h3 class="step-title">Install AnkiMCP</h3>
+			<h2 class="section-title" class:visible={configVisible}>MCP Configuration</h2>
+			<div class="glass-config" class:visible={configVisible}>
+				<div class="config-titlebar">
+					<div class="titlebar-dots">
+						<span class="dot dot-red"></span>
+						<span class="dot dot-yellow"></span>
+						<span class="dot dot-green"></span>
 					</div>
-					<div class="step-body">
-						<div class="install-option">
-							<div class="option-label">
-								<Download size={16} class="option-icon" />
-								<span>From AnkiWeb</span>
-							</div>
-							<ol class="install-steps">
-								<li>In Anki, go to <code>Tools &rarr; Add-ons &rarr; Get Add-ons...</code></li>
-								<li>Enter code: <code class="addon-code">1513864660</code></li>
-								<li>Click OK and restart Anki</li>
-							</ol>
-						</div>
-						<div class="option-divider">
-							<span>or</span>
-						</div>
-						<div class="install-option">
-							<div class="option-label">
-								<BookOpen size={16} class="option-icon" />
-								<span>From GitHub</span>
-							</div>
-							<ol class="install-steps">
-								<li>
-									Download from <a href="https://github.com/shivros/ankimcp">GitHub</a>
-								</li>
-								<li>
-									Copy <code>src/ankimcp</code> to your Anki addons folder
-								</li>
-								<li>Restart Anki</li>
-							</ol>
-						</div>
-					</div>
+					<span class="titlebar-label">mcp.json</span>
+					<button class="glass-copy-btn" onclick={copyConfig}>
+						{#if copied}
+							<Check size={14} />
+							<span>Copied</span>
+						{:else}
+							<Copy size={14} />
+							<span>Copy</span>
+						{/if}
+					</button>
 				</div>
-
-				<!-- Step 2: Configure -->
-				<div class="glass-step-card">
-					<div class="step-header">
-						<span class="step-badge">2</span>
-						<h3 class="step-title">Configure MCP Host</h3>
-					</div>
-					<div class="step-body">
-						<p class="step-desc">Add AnkiMCP to your Claude Desktop or Claude Code configuration:</p>
-						<CodeBlock language="JSON" label="mcp.json">
-							{`{
-  "mcpServers": {
-    "ankimcp": {
-      "type": "sse",
-      "url": "http://localhost:4473/sse"
-    }
-  }
-}`}
-						</CodeBlock>
-					</div>
-				</div>
-
-				<!-- Step 3: Start Using -->
-				<div class="glass-step-card">
-					<div class="step-header">
-						<span class="step-badge">3</span>
-						<h3 class="step-title">Start Using</h3>
-					</div>
-					<div class="step-body">
-						<p class="step-desc">
-							The MCP server starts automatically when you open an Anki profile. Your AI assistant
-							can now:
-						</p>
-						<ul class="usage-list">
-							<li>List and search your decks</li>
-							<li>Create new cards from conversations</li>
-							<li>Review your learning statistics</li>
-							<li>Update existing notes</li>
-						</ul>
-						<div class="try-it-box">
-							<Play size={16} class="try-icon" />
-							<p>
-								<strong>Try it:</strong> Ask Claude "What Anki decks do I have?" or "Create a flashcard
-								for [topic]"
-							</p>
-						</div>
-					</div>
-				</div>
+				<pre class="config-code"><code>{@html syntaxHighlight(configJson)}</code></pre>
 			</div>
 		</div>
 	</section>
@@ -309,6 +253,27 @@
 	</section>
 </div>
 
+<script lang="ts" module>
+	function syntaxHighlight(json: string): string {
+		return json
+			.replace(/&/g, '&amp;')
+			.replace(/</g, '&lt;')
+			.replace(/>/g, '&gt;')
+			.replace(
+				/"([^"]+)"(?=\s*:)/g,
+				'<span style="color: #67e8f9;">"$1"</span>'
+			)
+			.replace(
+				/:\s*"([^"]+)"/g,
+				': <span style="color: #86efac;">"$1"</span>'
+			)
+			.replace(
+				/[{}]/g,
+				(match) => `<span style="color: rgba(255,255,255,0.7);">${match}</span>`
+			);
+	}
+</script>
+
 <style>
 	/* ========== Page Wrapper ========== */
 	.aurora-page {
@@ -335,14 +300,14 @@
 	.aurora-blob {
 		position: absolute;
 		border-radius: 50%;
-		filter: blur(130px);
-		opacity: 0.2;
+		filter: blur(100px);
+		opacity: 0.45;
 		will-change: transform;
 	}
 
 	.blob-1 {
-		width: 500px;
-		height: 500px;
+		width: 600px;
+		height: 600px;
 		background: #4c1d95;
 		top: -10%;
 		left: -5%;
@@ -350,8 +315,8 @@
 	}
 
 	.blob-2 {
-		width: 420px;
-		height: 420px;
+		width: 500px;
+		height: 500px;
 		background: #1d4ed8;
 		top: 20%;
 		right: -8%;
@@ -359,8 +324,8 @@
 	}
 
 	.blob-3 {
-		width: 380px;
-		height: 380px;
+		width: 450px;
+		height: 450px;
 		background: #0d9488;
 		bottom: 10%;
 		left: 15%;
@@ -368,8 +333,8 @@
 	}
 
 	.blob-4 {
-		width: 350px;
-		height: 350px;
+		width: 400px;
+		height: 400px;
 		background: #be185d;
 		bottom: -5%;
 		right: 20%;
@@ -454,6 +419,9 @@
 		opacity: 1;
 		transform: translateY(0);
 	}
+
+	/* ========== Glass Utility ========== */
+	/* Shared glass surface mixin applied per-element */
 
 	/* ========== Hero Section ========== */
 	.hero-section {
@@ -799,234 +767,116 @@
 		}
 	}
 
-	/* ========== Quick Start Section ========== */
-	.quickstart-section {
+	/* ========== Config Panel ========== */
+	.config-section {
 		position: relative;
 		z-index: 1;
 		padding: 4rem 0 6rem;
 	}
 
-	.quickstart-steps {
-		display: flex;
-		flex-direction: column;
-		gap: 1.5rem;
-		max-width: 700px;
+	.glass-config {
+		max-width: 600px;
 		margin: 0 auto;
-	}
-
-	.quickstart-steps > * {
-		opacity: 0;
-		transform: translateY(30px);
-		transition:
-			opacity 0.7s ease,
-			transform 0.7s ease;
-	}
-
-	.quickstart-steps.visible > :nth-child(1) {
-		opacity: 1;
-		transform: translateY(0);
-		transition-delay: 0s;
-	}
-
-	.quickstart-steps.visible > :nth-child(2) {
-		opacity: 1;
-		transform: translateY(0);
-		transition-delay: 0.15s;
-	}
-
-	.quickstart-steps.visible > :nth-child(3) {
-		opacity: 1;
-		transform: translateY(0);
-		transition-delay: 0.3s;
-	}
-
-	.glass-step-card {
-		background: rgba(255, 255, 255, 0.06);
+		border-radius: 1rem;
+		overflow: hidden;
+		background: rgba(255, 255, 255, 0.05);
 		backdrop-filter: blur(20px);
 		-webkit-backdrop-filter: blur(20px);
 		border: 1px solid rgba(255, 255, 255, 0.1);
-		border-radius: 1.25rem;
-		overflow: hidden;
+		box-shadow: 0 0 60px rgba(0, 0, 0, 0.15);
+		opacity: 0;
+		transform: translateY(30px) perspective(800px) rotateX(0deg);
+		transition:
+			opacity 0.8s ease,
+			transform 0.8s ease,
+			box-shadow 0.4s ease;
+		transition-delay: 0.15s;
+	}
+
+	.glass-config.visible {
+		opacity: 1;
+		transform: translateY(0) perspective(800px) rotateX(0deg);
+	}
+
+	.glass-config:hover {
 		box-shadow:
-			0 0 40px rgba(0, 0, 0, 0.1),
-			inset 0 1px 0 rgba(255, 255, 255, 0.06);
+			0 0 60px rgba(0, 0, 0, 0.15),
+			0 0 30px rgba(129, 140, 248, 0.06);
+		transform: translateY(0) perspective(800px) rotateX(1.5deg);
 	}
 
-	.step-header {
+	.config-titlebar {
 		display: flex;
 		align-items: center;
-		gap: 1rem;
-		padding: 1.25rem 1.5rem;
-		border-bottom: 1px solid rgba(255, 255, 255, 0.06);
-		background: rgba(255, 255, 255, 0.03);
-	}
-
-	.step-badge {
-		display: flex;
-		align-items: center;
-		justify-content: center;
-		width: 32px;
-		height: 32px;
-		border-radius: 50%;
-		background: rgba(37, 99, 235, 0.3);
-		border: 1px solid rgba(96, 165, 250, 0.3);
-		color: #ffffff;
-		font-weight: 700;
-		font-size: 0.9rem;
-		flex-shrink: 0;
-	}
-
-	.step-title {
-		font-size: 1.1rem;
-		font-weight: 600;
-		margin: 0;
-		color: #ffffff;
-	}
-
-	.step-body {
-		padding: 1.5rem;
-	}
-
-	.step-desc {
-		font-size: 0.92rem;
-		line-height: 1.7;
-		color: rgba(255, 255, 255, 0.65);
-		margin: 0 0 1.25rem;
-	}
-
-	.install-option {
-		padding: 1rem;
-		border-radius: 0.75rem;
+		padding: 0.75rem 1rem;
 		background: rgba(255, 255, 255, 0.04);
-		border: 1px solid rgba(255, 255, 255, 0.06);
+		border-bottom: 1px solid rgba(255, 255, 255, 0.08);
 	}
 
-	.option-label {
+	.titlebar-dots {
 		display: flex;
-		align-items: center;
-		gap: 0.5rem;
-		font-weight: 600;
-		font-size: 0.9rem;
-		color: rgba(255, 255, 255, 0.85);
-		margin-bottom: 0.75rem;
+		gap: 6px;
 	}
 
-	:global(.option-icon) {
-		color: rgba(129, 140, 248, 0.8);
-		flex-shrink: 0;
-	}
-
-	.install-steps {
-		list-style: decimal;
-		padding-left: 1.25rem;
-		margin: 0;
-		display: flex;
-		flex-direction: column;
-		gap: 0.4rem;
-	}
-
-	.install-steps li {
-		font-size: 0.88rem;
-		line-height: 1.6;
-		color: rgba(255, 255, 255, 0.6);
-	}
-
-	.install-steps code {
-		font-family: var(--font-mono);
-		font-size: 0.82rem;
-		padding: 0.15rem 0.4rem;
-		border-radius: 0.3rem;
-		background: rgba(255, 255, 255, 0.08);
-		border: 1px solid rgba(255, 255, 255, 0.06);
-		color: rgba(255, 255, 255, 0.85);
-	}
-
-	.addon-code {
-		color: #86efac !important;
-		font-weight: 600;
-	}
-
-	.install-steps a {
-		color: #818cf8;
-		text-decoration: none;
-		transition: color 0.2s;
-	}
-
-	.install-steps a:hover {
-		color: #a5b4fc;
-		text-decoration: underline;
-	}
-
-	.option-divider {
-		display: flex;
-		align-items: center;
-		gap: 0.75rem;
-		margin: 1rem 0;
-		color: rgba(255, 255, 255, 0.3);
-		font-size: 0.8rem;
-	}
-
-	.option-divider::before,
-	.option-divider::after {
-		content: '';
-		flex: 1;
-		height: 1px;
-		background: rgba(255, 255, 255, 0.08);
-	}
-
-	.usage-list {
-		list-style: none;
-		padding: 0;
-		margin: 0 0 1.25rem;
-		display: flex;
-		flex-direction: column;
-		gap: 0.5rem;
-	}
-
-	.usage-list li {
-		font-size: 0.9rem;
-		line-height: 1.6;
-		color: rgba(255, 255, 255, 0.65);
-		padding-left: 1.25rem;
-		position: relative;
-	}
-
-	.usage-list li::before {
-		content: '';
-		position: absolute;
-		left: 0;
-		top: 0.55em;
-		width: 6px;
-		height: 6px;
+	.dot {
+		width: 12px;
+		height: 12px;
 		border-radius: 50%;
-		background: rgba(129, 140, 248, 0.6);
 	}
 
-	.try-it-box {
-		display: flex;
-		align-items: flex-start;
-		gap: 0.75rem;
-		padding: 1rem;
-		border-radius: 0.75rem;
-		background: rgba(37, 99, 235, 0.1);
-		border: 1px solid rgba(96, 165, 250, 0.15);
+	.dot-red {
+		background: #ef4444;
+	}
+	.dot-yellow {
+		background: #eab308;
+	}
+	.dot-green {
+		background: #22c55e;
 	}
 
-	:global(.try-icon) {
-		color: rgba(129, 140, 248, 0.8);
-		flex-shrink: 0;
-		margin-top: 0.15rem;
+	.titlebar-label {
+		flex: 1;
+		text-align: center;
+		font-size: 0.8rem;
+		font-family: var(--font-mono);
+		color: rgba(255, 255, 255, 0.4);
 	}
 
-	.try-it-box p {
-		font-size: 0.88rem;
-		line-height: 1.6;
-		color: rgba(255, 255, 255, 0.7);
-		margin: 0;
+	.glass-copy-btn {
+		display: inline-flex;
+		align-items: center;
+		gap: 0.35rem;
+		padding: 0.3rem 0.7rem;
+		border-radius: 0.4rem;
+		background: rgba(255, 255, 255, 0.08);
+		border: 1px solid rgba(255, 255, 255, 0.1);
+		color: rgba(255, 255, 255, 0.6);
+		font-size: 0.75rem;
+		cursor: pointer;
+		transition: all 0.2s ease;
 	}
 
-	.try-it-box strong {
+	.glass-copy-btn:hover {
+		background: rgba(255, 255, 255, 0.14);
 		color: rgba(255, 255, 255, 0.9);
+	}
+
+	.config-code {
+		padding: 1.25rem 1.5rem;
+		margin: 0;
+		font-family: var(--font-mono);
+		font-size: 0.9rem;
+		line-height: 1.6;
+		color: rgba(255, 255, 255, 0.85);
+		background: transparent;
+		border: none;
+		border-radius: 0;
+		box-shadow: none;
+		overflow-x: auto;
+	}
+
+	.config-code code {
+		font-family: inherit;
 	}
 
 	/* ========== Stats Row ========== */
@@ -1129,12 +979,12 @@
 		top: 50%;
 		left: 50%;
 		transform: translate(-50%, -50%);
-		width: 400px;
-		height: 250px;
+		width: 500px;
+		height: 300px;
 		border-radius: 50%;
-		background: radial-gradient(ellipse, rgba(129, 140, 248, 0.07) 0%, transparent 70%);
+		background: radial-gradient(ellipse, rgba(129, 140, 248, 0.12) 0%, transparent 70%);
 		pointer-events: none;
-		filter: blur(50px);
+		filter: blur(40px);
 	}
 
 	.cta-content {
@@ -1278,28 +1128,28 @@
 		}
 
 		.aurora-blob {
-			filter: blur(100px);
-			opacity: 0.15;
+			filter: blur(80px);
+			opacity: 0.3;
 		}
 
 		.blob-1 {
+			width: 350px;
+			height: 350px;
+		}
+
+		.blob-2 {
+			width: 300px;
+			height: 300px;
+		}
+
+		.blob-3 {
 			width: 280px;
 			height: 280px;
 		}
 
-		.blob-2 {
-			width: 240px;
-			height: 240px;
-		}
-
-		.blob-3 {
-			width: 220px;
-			height: 220px;
-		}
-
 		.blob-4 {
-			width: 200px;
-			height: 200px;
+			width: 250px;
+			height: 250px;
 		}
 	}
 

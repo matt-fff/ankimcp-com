@@ -91,7 +91,7 @@
 					<ol class="list-inside list-decimal space-y-2">
 						<li>
 							Download the latest release from <a
-								href="https://github.com/matt-fff/ankimcp/releases"
+								href="https://github.com/shivros/ankimcp/releases"
 								class="link">GitHub</a
 							>
 						</li>
@@ -571,7 +571,7 @@
 				<p class="mb-3">If you're still experiencing issues:</p>
 				<ul class="list-inside list-disc space-y-1">
 					<li>
-						Check the <a href="https://github.com/matt-fff/ankimcp/issues" class="link"
+						Check the <a href="https://github.com/shivros/ankimcp/issues" class="link"
 							>GitHub issues</a
 						> for similar problems
 					</li>

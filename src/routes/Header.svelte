@@ -6,7 +6,6 @@
 	let theme = $state<'light' | 'dark'>('light');
 
 	onMount(() => {
-		// Check for saved theme preference or default to light
 		const savedTheme = localStorage.getItem('theme') || 'light';
 		theme = savedTheme as 'light' | 'dark';
 		document.documentElement.setAttribute('data-theme', theme);
@@ -45,7 +44,7 @@
 				<Sun class="h-5 w-5" />
 			{/if}
 		</button>
-		<a href="https://github.com/matt-fff/ankimcp" class="github-btn">
+		<a href="https://github.com/shivros/ankimcp" class="github-btn">
 			<Github class="h-5 w-5" />
 			<span>GitHub</span>
 		</a>
@@ -58,25 +57,25 @@
 		align-items: center;
 		justify-content: space-between;
 		padding: 1rem 2rem;
-		background: color-mix(in srgb, var(--color-bg-2) 92%, transparent);
-		border-bottom: 1px solid color-mix(in srgb, var(--color-text) 12%, transparent);
+		background: rgba(5, 5, 16, 0.6);
+		border-bottom: 1px solid rgba(255, 255, 255, 0.08);
 		position: sticky;
 		top: 0;
 		z-index: 50;
 		transition: all 0.2s;
-		backdrop-filter: blur(6px);
-	}
-
-	:global([data-theme='dark']) header {
-		background: color-mix(in srgb, var(--color-bg-2) 86%, #000 14%);
-		border-bottom-color: color-mix(in srgb, var(--color-text) 18%, transparent);
+		backdrop-filter: blur(20px);
+		-webkit-backdrop-filter: blur(20px);
 	}
 
 	.logo h1 {
 		margin: 0;
 		font-size: 1.5rem;
-		font-weight: bold;
-		color: var(--color-theme-1);
+		font-weight: 800;
+		letter-spacing: -0.02em;
+		background: linear-gradient(135deg, #ffffff 0%, #c4b5fd 60%, #818cf8 100%);
+		-webkit-background-clip: text;
+		-webkit-text-fill-color: transparent;
+		background-clip: text;
 	}
 
 	.logo-link {
@@ -84,7 +83,10 @@
 	}
 
 	.logo-link:hover h1 {
-		color: color-mix(in srgb, var(--color-theme-1) 80%, var(--color-theme-2));
+		background: linear-gradient(135deg, #ffffff 0%, #a78bfa 50%, #818cf8 100%);
+		-webkit-background-clip: text;
+		-webkit-text-fill-color: transparent;
+		background-clip: text;
 	}
 
 	nav ul {
@@ -92,26 +94,27 @@
 		list-style: none;
 		margin: 0;
 		padding: 0;
-		gap: 2rem;
+		gap: 0.5rem;
 	}
 
 	nav a {
 		text-decoration: none;
-		color: color-mix(in srgb, var(--color-text) 65%, transparent);
+		color: rgba(255, 255, 255, 0.55);
 		font-weight: 500;
 		padding: 0.5rem 1rem;
-		border-radius: 0.375rem;
+		border-radius: 0.5rem;
 		transition: all 0.2s;
 	}
 
 	nav a:hover {
-		color: var(--color-theme-1);
-		background: color-mix(in srgb, var(--color-theme-2) 16%, transparent);
+		color: rgba(255, 255, 255, 0.9);
+		background: rgba(255, 255, 255, 0.08);
 	}
 
 	nav .active a {
-		color: var(--color-theme-1);
-		background: color-mix(in srgb, var(--color-theme-1) 18%, transparent);
+		color: #ffffff;
+		background: rgba(129, 140, 248, 0.2);
+		border: 1px solid rgba(129, 140, 248, 0.15);
 	}
 
 	.header-actions {
@@ -126,30 +129,18 @@
 		justify-content: center;
 		width: 2.25rem;
 		height: 2.25rem;
-		background: color-mix(in srgb, var(--color-bg-2) 92%, transparent);
-		border: 1px solid color-mix(in srgb, var(--color-text) 12%, transparent);
-		border-radius: 0.375rem;
-		color: color-mix(in srgb, var(--color-text) 70%, transparent);
+		background: rgba(255, 255, 255, 0.06);
+		border: 1px solid rgba(255, 255, 255, 0.1);
+		border-radius: 0.5rem;
+		color: rgba(255, 255, 255, 0.6);
 		cursor: pointer;
 		transition: all 0.2s;
 	}
 
 	.theme-toggle:hover {
-		background: color-mix(in srgb, var(--color-theme-2) 20%, transparent);
-		color: var(--color-theme-1);
-		border-color: color-mix(in srgb, var(--color-theme-2) 28%, transparent);
-	}
-
-	:global([data-theme='dark']) .theme-toggle {
-		background: color-mix(in srgb, var(--color-bg-2) 86%, #000 14%);
-		border-color: color-mix(in srgb, var(--color-text) 18%, transparent);
-		color: color-mix(in srgb, var(--color-text) 75%, transparent);
-	}
-
-	:global([data-theme='dark']) .theme-toggle:hover {
-		background: color-mix(in srgb, var(--color-theme-2) 24%, transparent);
-		color: var(--color-theme-2);
-		border-color: color-mix(in srgb, var(--color-theme-2) 32%, transparent);
+		background: rgba(129, 140, 248, 0.15);
+		color: #c4b5fd;
+		border-color: rgba(129, 140, 248, 0.25);
 	}
 
 	.github-btn {
@@ -157,34 +148,35 @@
 		align-items: center;
 		gap: 0.5rem;
 		padding: 0.5rem 1rem;
-		background: var(--color-theme-1);
+		background: rgba(124, 58, 237, 0.25);
 		color: white;
 		text-decoration: none;
-		border-radius: 0.375rem;
+		border-radius: 0.5rem;
+		border: 1px solid rgba(167, 139, 250, 0.25);
 		font-weight: 500;
 		font-size: 0.875rem;
-		transition:
-			background 0.2s,
-			transform 0.2s;
-		box-shadow: 0 10px 25px color-mix(in srgb, var(--color-theme-1) 25%, transparent);
+		transition: all 0.25s;
+		box-shadow: 0 0 20px rgba(124, 58, 237, 0.1);
 	}
 
 	.github-btn:hover {
-		background: color-mix(in srgb, var(--color-theme-1) 80%, var(--color-theme-2));
+		background: rgba(124, 58, 237, 0.4);
+		border-color: rgba(167, 139, 250, 0.4);
+		box-shadow: 0 0 30px rgba(124, 58, 237, 0.2);
 		transform: translateY(-1px);
 	}
 
 	@media (max-width: 768px) {
 		header {
-			padding: 1rem;
+			padding: 0.75rem 1rem;
 		}
 
 		nav ul {
-			gap: 1rem;
+			gap: 0.25rem;
 		}
 
 		nav a {
-			padding: 0.25rem 0.5rem;
+			padding: 0.35rem 0.6rem;
 			font-size: 0.875rem;
 		}
 
@@ -194,6 +186,10 @@
 
 		.github-btn span {
 			display: none;
+		}
+
+		.github-btn {
+			padding: 0.5rem;
 		}
 	}
 </style>
