@@ -736,7 +736,8 @@
 	.security-features {
 		display: grid;
 		gap: 1.5rem;
-		grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+		grid-template-columns: repeat(auto-fit, minmax(340px, 1fr));
+		max-width: calc(2 * 340px + 1.5rem + 3rem);
 	}
 
 	.feature-comparison,
